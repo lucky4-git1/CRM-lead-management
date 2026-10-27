@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  crm-db:
+    image: postgres:16-alpine
+    container_name: leadflow-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: crm_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  crm-app:
+    build: .
+    container_name: leadflow-crm-app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://postgres:password123@crm-db:5432/crm_db?schema=public"
+      JWT_SECRET: "leadflow-production-jwt-secret-replace-with-secure-key"
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+      NODE_ENV: "production"
+    depends_on:
+      crm-db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
