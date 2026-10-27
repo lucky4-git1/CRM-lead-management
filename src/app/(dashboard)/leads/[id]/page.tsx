@@ -26,10 +26,20 @@ import { ConvertLeadModal } from '@/components/ConvertLeadModal';
 import { AICopilotModal } from '@/components/AICopilotModal';
 import { SoftphoneModal } from '@/components/SoftphoneModal';
 
-export default function LeadDetailPage() {
-  const params = useParams();
+export default function LeadDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const routeParams = useParams();
   const router = useRouter();
-  const id = params?.id as string;
+  
+  const [id, setId] = useState<string>(() => {
+    if (routeParams?.id) {
+      return Array.isArray(routeParams.id) ? routeParams.id[0] : (routeParams.id as string);
+    }
+    return '';
+  });
 
   const [lead, setLead] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -51,20 +61,41 @@ export default function LeadDetailPage() {
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
-    if (id) fetchLead();
-  }, [id]);
+    if (routeParams?.id) {
+      const pId = Array.isArray(routeParams.id) ? routeParams.id[0] : (routeParams.id as string);
+      setId(pId);
+    } else if (params) {
+      params.then((p) => {
+        if (p?.id) setId(p.id);
+      });
+    }
+  }, [routeParams, params]);
 
-  const fetchLead = async () => {
+  const fetchLead = async (targetId?: string) => {
+    const leadId = targetId || id;
+    if (!leadId) return;
+    setLoading(true);
     try {
-      const res = await fetch(`/api/leads/${id}`);
+      const res = await fetch(`/api/leads/${leadId}`);
       const data = await res.json();
-      if (data.lead) setLead(data.lead);
+      if (data.lead) {
+        setLead(data.lead);
+      } else {
+        setLead(null);
+      }
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load lead profile:', err);
+      setLead(null);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (id) {
+      fetchLead(id);
+    }
+  }, [id]);
 
   const handleUpdateStatus = async (newStatus: string) => {
     try {
@@ -171,7 +202,7 @@ export default function LeadDetailPage() {
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
               {lead.jobTitle ? `${lead.jobTitle} at ` : ''}
-              <strong>{lead.companyName || 'Private Individual'}</strong> • Added {new Date(lead.createdAt).toLocaleDateString()}
+              <strong>{lead.companyName || 'Private Individual'}</strong> • <span suppressHydrationWarning>Added {new Date(lead.createdAt).toLocaleDateString()}</span>
             </p>
           </div>
         </div>
@@ -336,7 +367,7 @@ export default function LeadDetailPage() {
                       {t.status}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-1">Due: {new Date(t.dueDate).toLocaleDateString()}</p>
+                  <p className="text-[11px] text-slate-500 mt-1">Due: <span suppressHydrationWarning>{new Date(t.dueDate).toLocaleDateString()}</span></p>
                 </div>
               ))}
               {(!lead.tasks || lead.tasks.length === 0) && (

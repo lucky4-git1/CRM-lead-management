@@ -111,7 +111,7 @@ export function ActivityTimeline({ items }: { items: InteractionItem[] }) {
                     </span>
                   )}
                 </div>
-                <span className="text-[11px] text-slate-400">{timeAgo}</span>
+                <span suppressHydrationWarning className="text-[11px] text-slate-400">{timeAgo}</span>
               </div>
 
               <h4 className="mt-1 text-sm font-semibold text-slate-900">{item.summary}</h4>

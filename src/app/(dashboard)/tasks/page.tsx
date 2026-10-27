@@ -187,7 +187,7 @@ export default function TasksPage() {
                   )}
 
                   <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
-                    <span className="flex items-center gap-1 font-semibold text-slate-600">
+                    <span suppressHydrationWarning className="flex items-center gap-1 font-semibold text-slate-600">
                       <Clock className="h-3.5 w-3.5 text-slate-400" />
                       Due: {new Date(task.dueDate).toLocaleDateString()}
                     </span>

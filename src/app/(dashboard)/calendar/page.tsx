@@ -59,7 +59,7 @@ export default function CalendarPage() {
                 </div>
 
                 <div className="text-right">
-                  <span className="font-bold text-slate-700 block">
+                  <span suppressHydrationWarning className="font-bold text-slate-700 block">
                     {new Date(t.dueDate).toLocaleDateString()}
                   </span>
                   <span className="rounded bg-slate-200/60 px-1.5 py-0.5 text-[10px] font-bold text-slate-600">

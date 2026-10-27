@@ -146,7 +146,7 @@ export default function PublicQuoteSignPage() {
               <div className="rounded-xl bg-emerald-50 p-6 text-center border border-emerald-200 space-y-2">
                 <CheckCircle2 className="mx-auto h-10 w-10 text-emerald-600" />
                 <h3 className="text-base font-bold text-emerald-950">Agreement Digitally Signed</h3>
-                <p className="text-xs text-emerald-700">
+                <p suppressHydrationWarning className="text-xs text-emerald-700">
                   Signed by <strong>{signatureName || quote?.signatureName || 'Authorized Signatory'}</strong> on{' '}
                   {new Date().toLocaleDateString()}.
                 </p>

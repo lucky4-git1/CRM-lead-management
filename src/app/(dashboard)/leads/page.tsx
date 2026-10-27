@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Users2,
   Plus,
@@ -22,6 +23,7 @@ import { LeadModal } from '@/components/LeadModal';
 import { CsvImportModal } from '@/components/CsvImportModal';
 
 export default function LeadsPage() {
+  const router = useRouter();
   const [leads, setLeads] = useState<any[]>([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 15, total: 0, totalPages: 1 });
   const [loading, setLoading] = useState(true);
@@ -334,7 +336,16 @@ export default function LeadsPage() {
                         />
                       </td>
                       <td className="p-3">
-                        <Link href={`/leads/${lead.id}`} className="font-bold text-slate-900 hover:text-blue-600">
+                        <Link
+                          href={`/leads/${lead.id}`}
+                          onClick={(e) => {
+                            if (!e.metaKey && !e.ctrlKey) {
+                              e.preventDefault();
+                              router.push(`/leads/${lead.id}`);
+                            }
+                          }}
+                          className="font-bold text-slate-900 hover:text-blue-600 transition"
+                        >
                           {lead.firstName} {lead.lastName}
                         </Link>
                         <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-400">
@@ -399,7 +410,13 @@ export default function LeadsPage() {
                       <td className="p-3 text-right">
                         <Link
                           href={`/leads/${lead.id}`}
-                          className="rounded bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-blue-600 hover:text-white transition"
+                          onClick={(e) => {
+                            if (!e.metaKey && !e.ctrlKey) {
+                              e.preventDefault();
+                              router.push(`/leads/${lead.id}`);
+                            }
+                          }}
+                          className="inline-flex items-center justify-center rounded-lg bg-slate-100 px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-blue-600 hover:text-white transition shadow-2xs cursor-pointer active:scale-95"
                         >
                           Open Profile
                         </Link>
@@ -481,7 +498,13 @@ export default function LeadsPage() {
                       </div>
                       <Link
                         href={`/leads/${lead.id}`}
-                        className="mt-2 block text-xs font-bold text-slate-900 hover:text-blue-600"
+                        onClick={(e) => {
+                          if (!e.metaKey && !e.ctrlKey) {
+                            e.preventDefault();
+                            router.push(`/leads/${lead.id}`);
+                          }
+                        }}
+                        className="mt-2 block text-xs font-bold text-slate-900 hover:text-blue-600 transition"
                       >
                         {lead.firstName} {lead.lastName}
                       </Link>
@@ -489,7 +512,18 @@ export default function LeadsPage() {
 
                       <div className="mt-2.5 flex items-center justify-between border-t border-slate-50 pt-2 text-[10px] text-slate-400">
                         <span>${lead.estimatedValue?.toLocaleString() || '0'}</span>
-                        <span>{lead.owner ? `${lead.owner.firstName}` : 'Unassigned'}</span>
+                        <Link
+                          href={`/leads/${lead.id}`}
+                          onClick={(e) => {
+                            if (!e.metaKey && !e.ctrlKey) {
+                              e.preventDefault();
+                              router.push(`/leads/${lead.id}`);
+                            }
+                          }}
+                          className="font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          Open Profile &rarr;
+                        </Link>
                       </div>
                     </div>
                   ))}

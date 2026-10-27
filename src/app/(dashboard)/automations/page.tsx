@@ -142,7 +142,7 @@ export default function AutomationsPage() {
 
               <div className="flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-100 pt-2">
                 <span>Executed: <strong>{rule.executionCount}</strong> times</span>
-                <span>
+                <span suppressHydrationWarning>
                   Last run: {rule.lastExecutedAt ? new Date(rule.lastExecutedAt).toLocaleDateString() : 'Never'}
                 </span>
               </div>
