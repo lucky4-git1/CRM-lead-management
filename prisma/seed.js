@@ -5,6 +5,10 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log('--- Cleaning existing database tables ---');
+  await prisma.meetingBooking.deleteMany({});
+  await prisma.quote.deleteMany({});
+  await prisma.product.deleteMany({});
+  await prisma.emailTemplate.deleteMany({});
   await prisma.auditLog.deleteMany({});
   await prisma.automationExecutionLog.deleteMany({});
   await prisma.automationRule.deleteMany({});
@@ -338,6 +342,98 @@ async function main() {
       expectedCloseDate: new Date(Date.now() + 10 * 86400000),
       ownerId: rep2.id,
       status: 'OPEN',
+    },
+  });
+
+  console.log('--- Creating Products & CPQ Catalog ---');
+  const prod1 = await prisma.product.create({
+    data: {
+      organizationId: org.id,
+      name: 'LeadFlow Enterprise Rep License (Annual)',
+      sku: 'LF-ENT-USER',
+      unitPrice: 960,
+      description: 'Full CRM access, automated routing, WhatsApp integration, unlimited pipelines',
+      category: 'SOFTWARE_LICENSE',
+    },
+  });
+
+  const prod2 = await prisma.product.create({
+    data: {
+      organizationId: org.id,
+      name: 'Enterprise Dedicated VoIP & Telephony Add-on',
+      sku: 'LF-VOIP-ADDON',
+      unitPrice: 1800,
+      description: 'WebRTC softphone dialer, call recording, automated Whisper transcription',
+      category: 'ADDON',
+    },
+  });
+
+  const prod3 = await prisma.product.create({
+    data: {
+      organizationId: org.id,
+      name: 'Implementation & White-Glove Onboarding',
+      sku: 'LF-ONBOARDING',
+      unitPrice: 5000,
+      description: 'Custom pipeline setup, legacy CRM data migration, team training sessions',
+      category: 'SERVICES',
+    },
+  });
+
+  console.log('--- Creating Quotes ---');
+  await prisma.quote.create({
+    data: {
+      organizationId: org.id,
+      dealId: deal1.id,
+      quoteNumber: 'QUO-2026-0041',
+      title: 'Vertex Cloud Platform Migration Proposal',
+      status: 'SENT',
+      subtotal: 130000,
+      discount: 5000,
+      tax: 0,
+      total: 125000,
+      expiresAt: new Date(Date.now() + 15 * 86400000),
+      lineItems: [
+        { name: prod1.name, sku: prod1.sku, qty: 100, unitPrice: 960, total: 96000 },
+        { name: prod2.name, sku: prod2.sku, qty: 1, unitPrice: 1800, total: 1800 },
+        { name: prod3.name, sku: prod3.sku, qty: 1, unitPrice: 5000, total: 5000 },
+      ],
+      notes: 'Includes SOC2 Type II compliance addendum and 99.99% uptime SLA.',
+    },
+  });
+
+  console.log('--- Creating Email Templates ---');
+  await prisma.emailTemplate.createMany({
+    data: [
+      {
+        organizationId: org.id,
+        name: 'Inbound Demo Invitation',
+        subject: 'Quick question about {{companyName}} and LeadFlow',
+        body: 'Hi {{firstName}},\n\nThanks for reaching out! I noticed you are leading operations at {{companyName}}. We help teams like yours automate lead routing and reduce response time to under 5 minutes.\n\nAre you open for a brief 15-minute discovery call this Thursday?\n\nBest,\n{{ownerName}}',
+        category: 'DEMO',
+      },
+      {
+        organizationId: org.id,
+        name: 'Proposal Follow-up',
+        subject: 'Reviewing proposal for {{companyName}}',
+        body: 'Hi {{firstName}},\n\nFollowing up on the proposal we sent over. Have you and the procurement team had a chance to review the terms?\n\nLet me know if you would like to schedule a quick call to address any technical questions.\n\nWarm regards,\n{{ownerName}}',
+        category: 'PROPOSAL',
+      },
+    ],
+  });
+
+  console.log('--- Creating Meeting Bookings ---');
+  await prisma.meetingBooking.create({
+    data: {
+      organizationId: org.id,
+      title: 'Product Demonstration & Technical Architecture Review',
+      scheduledAt: new Date(Date.now() + 2 * 86400000),
+      durationMinutes: 45,
+      hostUserId: rep1.id,
+      guestName: 'Daniel Sterling',
+      guestEmail: 'daniel.sterling@vertexcloud.io',
+      guestPhone: '+1-415-555-9012',
+      guestNotes: 'Focus on multi-tenant isolation and WhatsApp Business Cloud API latency.',
+      status: 'CONFIRMED',
     },
   });
 

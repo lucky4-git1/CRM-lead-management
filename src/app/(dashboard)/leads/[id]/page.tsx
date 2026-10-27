@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import { ActivityTimeline } from '@/components/ActivityTimeline';
 import { ConvertLeadModal } from '@/components/ConvertLeadModal';
+import { AICopilotModal } from '@/components/AICopilotModal';
+import { SoftphoneModal } from '@/components/SoftphoneModal';
 
 export default function LeadDetailPage() {
   const params = useParams();
@@ -32,6 +34,8 @@ export default function LeadDetailPage() {
   const [lead, setLead] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isConvertOpen, setIsConvertOpen] = useState(false);
+  const [isAICopilotOpen, setIsAICopilotOpen] = useState(false);
+  const [isSoftphoneOpen, setIsSoftphoneOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'note' | 'call' | 'email' | 'whatsapp' | 'task'>('note');
 
   // Interactive form states
@@ -173,6 +177,14 @@ export default function LeadDetailPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsAICopilotOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-3.5 py-2 text-xs font-bold text-purple-700 shadow-xs hover:bg-purple-100 transition"
+          >
+            <Sparkles className="h-4 w-4 text-purple-600" />
+            <span>AI Copilot</span>
+          </button>
+
           {lead.status !== 'CONVERTED' ? (
             <button
               onClick={() => setIsConvertOpen(true)}
@@ -219,7 +231,18 @@ export default function LeadDetailPage() {
               </div>
               <div>
                 <span className="text-slate-400 block text-[11px]">Phone</span>
-                <span className="font-semibold text-slate-800">{lead.phone || '—'}</span>
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-slate-800">{lead.phone || '—'}</span>
+                  {lead.phone && (
+                    <button
+                      onClick={() => setIsSoftphoneOpen(true)}
+                      className="inline-flex items-center gap-1 rounded bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 hover:bg-emerald-100 border border-emerald-200"
+                    >
+                      <PhoneCall className="h-3 w-3" />
+                      <span>Call WebRTC</span>
+                    </button>
+                  )}
+                </div>
               </div>
               <div>
                 <span className="text-slate-400 block text-[11px]">WhatsApp</span>
@@ -460,6 +483,17 @@ export default function LeadDetailPage() {
             {/* Email tab form */}
             {activeTab === 'email' && (
               <div className="mt-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-slate-600">Compose Tracked Email</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsAICopilotOpen(true)}
+                    className="inline-flex items-center gap-1 rounded bg-purple-50 px-2.5 py-1 text-[11px] font-bold text-purple-700 hover:bg-purple-100 border border-purple-200"
+                  >
+                    <Sparkles className="h-3 w-3 text-purple-600" />
+                    <span>AI Email Drafter</span>
+                  </button>
+                </div>
                 <input
                   type="text"
                   value={emailSubject}
@@ -468,13 +502,16 @@ export default function LeadDetailPage() {
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs focus:border-blue-500 focus:outline-none"
                 />
                 <textarea
-                  rows={3}
+                  rows={4}
                   value={emailBody}
                   onChange={(e) => setEmailBody(e.target.value)}
                   placeholder="Compose email message to customer..."
                   className="w-full rounded-lg border border-slate-200 p-3 text-xs focus:border-blue-500 focus:outline-none"
                 />
-                <div className="flex justify-end">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-slate-400">
+                    Includes 1x1 transparent tracking pixel for open detection.
+                  </span>
                   <button
                     disabled={!emailSubject.trim() || actionLoading}
                     onClick={() =>
@@ -495,6 +532,17 @@ export default function LeadDetailPage() {
             {/* WhatsApp tab form */}
             {activeTab === 'whatsapp' && (
               <div className="mt-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-slate-600">WhatsApp Cloud API Message</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsAICopilotOpen(true)}
+                    className="inline-flex items-center gap-1 rounded bg-purple-50 px-2.5 py-1 text-[11px] font-bold text-purple-700 hover:bg-purple-100 border border-purple-200"
+                  >
+                    <Sparkles className="h-3 w-3 text-purple-600" />
+                    <span>AI WhatsApp Drafter</span>
+                  </button>
+                </div>
                 <textarea
                   rows={3}
                   value={whatsappMessage}
@@ -564,7 +612,7 @@ export default function LeadDetailPage() {
         </div>
       </div>
 
-      {/* Convert Lead Modal */}
+      {/* Modals */}
       <ConvertLeadModal
         isOpen={isConvertOpen}
         onClose={() => setIsConvertOpen(false)}
@@ -573,6 +621,26 @@ export default function LeadDetailPage() {
           router.push('/deals');
         }}
         lead={lead}
+      />
+
+      <AICopilotModal
+        isOpen={isAICopilotOpen}
+        onClose={() => setIsAICopilotOpen(false)}
+        lead={lead}
+        onApplyDraft={(draft) => {
+          if (draft.subject) setEmailSubject(draft.subject);
+          setEmailBody(draft.body);
+          setWhatsappMessage(draft.body);
+        }}
+      />
+
+      <SoftphoneModal
+        isOpen={isSoftphoneOpen}
+        onClose={() => setIsSoftphoneOpen(false)}
+        defaultNumber={lead.phone || lead.whatsapp || ''}
+        defaultLeadId={lead.id}
+        defaultLeadName={`${lead.firstName} ${lead.lastName}`}
+        onCallLogged={fetchLead}
       />
     </div>
   );

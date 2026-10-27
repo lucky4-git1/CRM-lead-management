@@ -157,6 +157,10 @@ model Organization {
   auditLogs             AuditLog[]
   importJobs            ImportJob[]
   savedViews            SavedView[]
+  emailTemplates        EmailTemplate[]
+  products              Product[]
+  quotes                Quote[]
+  bookings              MeetingBooking[]
 
   @@index([slug])
 }
@@ -437,6 +441,7 @@ model Deal {
   company           Company?      @relation(fields: [companyId], references: [id], onDelete: SetNull)
   tasks             Task[]
   interactions      Interaction[]
+  quotes            Quote[]
 
   @@index([organizationId])
   @@index([pipelineId])
@@ -709,3 +714,89 @@ model SavedView {
   @@index([organizationId])
   @@index([organizationId, entityType])
 }
+
+model EmailTemplate {
+  id             String       @id @default(uuid())
+  organizationId String
+  name           String
+  subject        String
+  body           String       @db.Text
+  category       String       @default("GENERAL")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+}
+
+model Product {
+  id             String       @id @default(uuid())
+  organizationId String
+  name           String
+  sku            String
+  unitPrice      Float        @default(0.0)
+  description    String?      @db.Text
+  category       String       @default("SUBSCRIPTION")
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  DECLINED
+}
+
+model Quote {
+  id             String       @id @default(uuid())
+  organizationId String
+  dealId         String
+  quoteNumber    String       @unique
+  title          String
+  status         QuoteStatus  @default(DRAFT)
+  subtotal       Float        @default(0.0)
+  discount       Float        @default(0.0)
+  tax            Float        @default(0.0)
+  total          Float        @default(0.0)
+  expiresAt      DateTime?
+  signatureName  String?
+  signedAt       DateTime?
+  lineItems      Json         @default("[]")
+  notes          String?      @db.Text
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  deal           Deal         @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([dealId])
+}
+
+model MeetingBooking {
+  id              String       @id @default(uuid())
+  organizationId  String
+  title           String
+  scheduledAt     DateTime
+  durationMinutes Int          @default(30)
+  hostUserId      String?
+  guestName       String
+  guestEmail      String
+  guestPhone      String?
+  guestNotes      String?      @db.Text
+  status          String       @default("CONFIRMED")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+}
+

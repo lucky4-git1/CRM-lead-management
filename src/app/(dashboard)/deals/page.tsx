@@ -17,12 +17,15 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { MetricCard } from '@/components/MetricCard';
+import { QuoteBuilderModal } from '@/components/QuoteBuilderModal';
+import { Sparkles, FileText, ExternalLink } from 'lucide-react';
 
 export default function DealsPage() {
   const [pipeline, setPipeline] = useState<any>(null);
   const [deals, setDeals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isNewDealOpen, setIsNewDealOpen] = useState(false);
+  const [quoteDeal, setQuoteDeal] = useState<any>(null);
 
   // Form states for creating a new deal
   const [newDealTitle, setNewDealTitle] = useState('');
@@ -240,6 +243,31 @@ export default function DealsPage() {
                         )}
                       </div>
 
+                      {/* AI Health & Proposal Action */}
+                      <div className="mt-2.5 flex items-center justify-between border-t border-slate-100 pt-2 text-[10px]">
+                        <span
+                          className={`inline-flex items-center gap-1 font-bold ${
+                            deal.probability >= 60
+                              ? 'text-emerald-700'
+                              : deal.probability >= 40
+                              ? 'text-blue-700'
+                              : 'text-amber-700'
+                          }`}
+                        >
+                          <Sparkles className="h-3 w-3" />
+                          <span>{deal.probability >= 60 ? 'Strong Health' : 'Needs Outreach'}</span>
+                        </span>
+
+                        <button
+                          onClick={() => setQuoteDeal(deal)}
+                          className="inline-flex items-center gap-1 rounded bg-slate-100 px-2 py-0.5 font-semibold text-slate-700 hover:bg-blue-100 hover:text-blue-700"
+                          title="Generate CPQ Quote"
+                        >
+                          <FileText className="h-3 w-3" />
+                          <span>CPQ Quote</span>
+                        </button>
+                      </div>
+
                       {/* Advance Stage Control */}
                       <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2">
                         <span
@@ -353,6 +381,17 @@ export default function DealsPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Quote Builder Modal */}
+      {quoteDeal && (
+        <QuoteBuilderModal
+          isOpen={!!quoteDeal}
+          onClose={() => setQuoteDeal(null)}
+          dealId={quoteDeal.id}
+          dealTitle={quoteDeal.title}
+          onSuccess={fetchPipelineAndDeals}
+        />
       )}
     </div>
   );

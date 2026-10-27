@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, Bell, Plus, User as UserIcon } from 'lucide-react';
+import { Search, Bell, Plus, PhoneCall, User as UserIcon } from 'lucide-react';
 import Link from 'next/link';
+import { SoftphoneModal } from './SoftphoneModal';
 
 interface NavbarProps {
   user?: {
@@ -18,6 +19,7 @@ interface NavbarProps {
 
 export function Navbar({ user, organization }: NavbarProps) {
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isSoftphoneOpen, setIsSoftphoneOpen] = useState(false);
 
   return (
     <header className="flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white px-6">
@@ -33,6 +35,16 @@ export function Navbar({ user, organization }: NavbarProps) {
       </div>
 
       <div className="flex items-center gap-3">
+        {/* Softphone Launcher */}
+        <button
+          onClick={() => setIsSoftphoneOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 shadow-2xs hover:bg-emerald-100 transition"
+          title="Open WebRTC Softphone Dialer"
+        >
+          <PhoneCall className="h-3.5 w-3.5 text-emerald-600" />
+          <span>Softphone</span>
+        </button>
+
         {/* Quick create action */}
         <div className="flex items-center gap-2">
           <Link
@@ -98,6 +110,11 @@ export function Navbar({ user, organization }: NavbarProps) {
           </div>
         </div>
       </div>
+
+      <SoftphoneModal
+        isOpen={isSoftphoneOpen}
+        onClose={() => setIsSoftphoneOpen(false)}
+      />
     </header>
   );
 }
